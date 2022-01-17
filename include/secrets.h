@@ -28,7 +28,15 @@
 
 const String ssid = STASSID;                                            // WiFi ssid
 const String password = STAPSK;                                         // WiFi password
-const String hostName = "BathLight";                                    // hostname as seen on network
-const String softwareVersion = "1.9.21";                                // used for OTA updates & about page
-const String deviceFamily = "ESP8266-12E-BATHLIGHT";                    // used for OTA updates & about page
-const String description = "Third floor Bathroom Light (Z-Wave)";       // used for about page
+
+#if defined(esp12e) 
+const String hostName = "ESP12E-DEMO";                                  // hostname as seen on network
+#elif defined(esp07s)   
+const String hostName = "ESP07-DEMO";                        
+#else
+const String hostName = "ESP01DEMO";                                   
+#endif
+
+const String softwareVersion = "1.10.21";                                // used for OTA updates & about page
+const String deviceFamily = "ESP8266-DEMO";                             // used for OTA updates & about page
+const String description = "Description";                               // used for about page
