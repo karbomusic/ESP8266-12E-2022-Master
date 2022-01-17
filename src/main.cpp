@@ -1,6 +1,9 @@
 /*+===================================================================
   Project:  ESP8266 Project template with builtin OTA,
             HTTP Server, WiFi connectivity and About page.
+            This can be deployed to any ESP8266 module
+            provided you use the correct build targets:
+                esp01, esp12e, esp07s
   
   File:      main.cpp
 
@@ -14,32 +17,26 @@
 
              Architecture: ESP8266 specific.
 
-  Dependencies:.
+  Building:  pio run -t <target> -e envName
 
-             localWifi.h 
-                -- <Arduino.h>
-                -- <ESP8266WiFi.h>
-                -- <secrets.h>               
-             localUPdateServer.h
-                -- <Arduino.h>
-                -- <ESP8266WiFi.h>
-                -- <ESP8266mDNS.h>
-                -- <ESP8266HTTPUpdateServer.h>
-                -- <ESP8266httpUpdate.h>
-                -- <secrets.h>
+             Examples:
+                pio run -t upload, monitor -e esp12e
+                pio run -t upload, monitor -e esp01
+                pio run -t upload -e esp07s --upload-port COM6
+                pio run -t monitor -e fm-dev-kit 
 
   Config:    You must update secrets.h with your WiFi credentials
              and the hostname you choose for this device.
 
-  Kary Wall 1/20/2022.
+  Kary Wall 1/16/2022.
 ===================================================================+*/
 
 #include <localWiFi.h>
 #include <localUpdateServer.h>
 
-IPAddress ipAddress;                // IP address of the device
-const char *host;                   // hostname as seen on the network
-WiFiClient updateClient;            // client for OTA updates 
+IPAddress ipAddress;     // IP address of the device
+const char *host;        // hostname as seen on the network
+WiFiClient updateClient; // client for OTA updates
 
 void setup(void)
 {
@@ -50,15 +47,18 @@ void setup(void)
     Serial.println();
     Serial.println("Booting up...");
     pinMode(LED_BUILTIN, OUTPUT);
+    digitalWrite(LED_BUILTIN, HIGH); // I have zero idea why HIGH == OFF
 
     /*--------------------------------------------------------------------
      Start WiFi & OTA HTTP update server
     ---------------------------------------------------------------------*/
-    ipAddress = startWiFi();                                // hostname, ssid & pwd in secrets.h
-    host = getHostName();                                   // from localWiFi.h
-    startUpdateServer(host, ipAddress.toString());          // from localUpdateServer.h
-    digitalWrite(LED_BUILTIN, HIGH);                        // I have zero idea why HIGH == OFF
-    autoUpdate(updateClient);                               // uncomment if not using auto updates
+    ipAddress = startWiFi(); // hostname, ssid & pwd in secrets.h
+    host = getHostName();
+    startServers(host, ipAddress.toString()); // from localUpdateServer.h
+
+#if defined(esp12e) || defined(esp07s)      
+    autoUpdate(updateClient);                    
+#endif
 
     /*--------------------------------------------------------------------
      Project specific setup code
@@ -66,13 +66,13 @@ void setup(void)
 }
 
 void loop(void)
-{ 
+{
     /*--------------------------------------------------------------------
      Project specific loop code
     ---------------------------------------------------------------------*/
 
     /*--------------------------------------------------------------------
-     Required for OTA updates
+     Required for OTA updates and/or HTTP server
     ---------------------------------------------------------------------*/
     httpServer.handleClient();
     MDNS.update();

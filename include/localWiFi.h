@@ -57,6 +57,7 @@ IPAddress startWiFi()
         timerSeconds++;
     }
     
+    digitalWrite(LED_BUILTIN, HIGH);
     WiFi.setHostname(hostName.c_str());
     Serial.println("\n-------------------------------------");
     Serial.println("WiFi connected");

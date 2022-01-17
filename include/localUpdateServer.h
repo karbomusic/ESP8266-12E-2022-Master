@@ -9,13 +9,17 @@
 
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
+#if defined(esp12e) || defined(esp07s)
 #include <ESP8266HTTPUpdateServer.h>
 #include <ESP8266httpUpdate.h>
+#endif
 
 ESP8266WebServer httpServer(80);
+#if defined(esp12e) || defined(esp07s)
 ESP8266HTTPUpdateServer httpUpdater;
+#endif
 
-void initWebServer();
+void startWebServer();
 void handleRoot();
 void handleNotFound();
 void handleAbout();
@@ -29,49 +33,60 @@ extern const String softwareVersion;
 extern const String deviceFamily;
 extern const String description;
 extern const String ssid;
+extern const String hostName;
 
-void startUpdateServer(const char *host, String ipAddress)
+void startServers(const char *host, String ipAddress)
 {
     localIP = ipAddress;
-    Serial.println("Starting HTTP update server...");
     MDNS.begin(host);
+
+#if defined(esp12e) || defined(esp07s)
+    Serial.println("Starting HTTP update server...");
     httpUpdater.setup(&httpServer);
-    initWebServer();
+#endif
+
+    startWebServer();
     MDNS.addService("http", "tcp", 80);
-    Serial.printf("HTTP Update Server running! Open http://%s.ra.local/update in your browser to update manually.\n", host);
+    
+#if defined(esp12e) || defined(esp07s)
+    Serial.printf("HTTP Update & Web Servers running! Open http://%s.ra.local/update in your browser to update manually.\n", host);
+#else
+    Serial.printf("HTTP Server running! Open http://%s.ra.local/about in your browser.\n", host);
+#endif
 }
 
-void initWebServer()
+void startWebServer()
 {
     httpServer.on("/", handleRoot);
     httpServer.on("/restart", handleRestart);
     httpServer.on("/about", handleAbout);
     httpServer.onNotFound(handleNotFound);
     httpServer.begin();
-    Serial.println("HTTP Server running!");
 }
 
 void handleAbout()
 {
-    String aboutResponse = "<body style=\"background-color:#222222;color:#cccccc;font-family:arial\"><b>[About ESP8266]</b><br><br>";
-    aboutResponse += "Device Family: " + deviceFamily + "<br>";
-    aboutResponse += "ESP Core Version: " + String(ESP.getCoreVersion()) + "<br>";
-    aboutResponse += "CPU Frequency: " + String(ESP.getCpuFreqMHz()) + "<br>";
-    aboutResponse += "Free Heap Mem: " + String(ESP.getFreeHeap()) + "<br>"; 
-    aboutResponse += "Flash Mem Size: " + String(ESP.getFlashChipRealSize()/1024/1024) + " MB<br>"; 
-    aboutResponse += "Hostname: " + hostName + "<br>";
-    aboutResponse += "IPAddress: " + localIP + "<br>";
-    aboutResponse += "MAC Address: " + String(WiFi.macAddress()) + "<br>";
-    aboutResponse += "Software Version: " + softwareVersion + "<br>";
-    aboutResponse += "SSID: " + ssid + "<br>";
-    aboutResponse += "Description: " + description + "<br>";
-    aboutResponse += "Update: http://" + hostName + ".ra.local/update<br><br>";
-    aboutResponse += "<button onclick=\"window.location.href='/restart'\">Restart</button></body>";
+    String aboutResponse = "<body style=\"background-color:#222222;color:#cccccc;font-family:arial\"><b>[About ESP8266]</b><br><br>"
+    "Device Family: " + deviceFamily + "<br>"
+    "ESP Core Version: " + String(ESP.getCoreVersion()) + "<br>"
+    "CPU Frequency: " + String(ESP.getCpuFreqMHz()) + "<br>"
+    "Free Heap Mem: " + String(ESP.getFreeHeap()) + "<br>"
+    "Flash Mem Size: " + String(ESP.getFlashChipRealSize() / 1024 / 1024) + " MB<br>"
+    "<b>Uptime:</b> " + String(millis()/1000/60) + " minutes<br>"
+    "Hostname: " + hostName + "<br>"
+    "IPAddress: " + localIP + "<br>"
+    "MAC Address: " + String(WiFi.macAddress()) + "<br>"
+    "Software Version: " + softwareVersion + "<br>"
+    "SSID: " + ssid + "<br>"
+    "Description: " + description + "<br>"
+    "Update: http://" + hostName + ".ra.local/update<br><br>"
+    "<button onclick=\"window.location.href='/restart'\">Restart</button></body>";
     httpServer.send(200, "text/html", aboutResponse);
     aboutResponse.clear();
 }
 
-void handleRestart(){
+void handleRestart()
+{
     httpServer.send(200, "text/plain", "Restarting in 5 seconds...");
     delay(5000);
     ESP.restart();
@@ -105,10 +120,10 @@ void handleNotFound()
 // Then respond to this request with the update.bin file.
 // Once all devices that use this method have been updated,
 // Consider removing this method and using the HTTPUpdateServer instead.
+#if defined(esp12e) || defined(esp07s)
 void autoUpdate(WiFiClient updateClient)
 {
     Serial.println("Current Version: [" + softwareVersion + "] Checking for update...");
-
     t_httpUpdate_return ret = ESPhttpUpdate.update(updateClient, "192.168.2.101", 80, "/themothership/api/admin/UpdateESP8266OTA?softwareVersion=" + softwareVersion + "&deviceFamily=" + deviceFamily);
 
     switch (ret)
@@ -116,7 +131,7 @@ void autoUpdate(WiFiClient updateClient)
     case HTTP_UPDATE_FAILED:
         Serial.println("Update failed.");
         Serial.printf("Error (%d): %s\n", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
-        if(ESPhttpUpdate.getLastError() == -102)
+        if (ESPhttpUpdate.getLastError() == -102)
         {
             Serial.println("Wrong URL or the remote update server is unaware of this device.");
         }
@@ -129,3 +144,4 @@ void autoUpdate(WiFiClient updateClient)
         break;
     }
 }
+#endif
