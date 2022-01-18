@@ -30,7 +30,7 @@ const String ssid = STASSID;                                            // WiFi 
 const String password = STAPSK;                                         // WiFi password
 
 #if defined(esp12e) 
-const String hostName = "ESP12E-LAB";                                  // hostname as seen on network
+const String hostName = "ESP12E-DEV";                                  // hostname as seen on network
 #elif defined(esp07s)   
 const String hostName = "ESP07-DEV";                        
 #else
