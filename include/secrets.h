@@ -30,13 +30,13 @@ const String ssid = STASSID;                                            // WiFi 
 const String password = STAPSK;                                         // WiFi password
 
 #if defined(esp12e) 
-const String hostName = "ESP12E-DEMO";                                  // hostname as seen on network
+const String hostName = "ESP12E-LAB";                                  // hostname as seen on network
 #elif defined(esp07s)   
-const String hostName = "ESP07-DEMO";                        
+const String hostName = "ESP07-DEV";                        
 #else
-const String hostName = "ESP01DEMO";                                   
+const String hostName = "ESP01-DEV";                                   
 #endif
 
-const String softwareVersion = "1.10.21";                                // used for OTA updates & about page
-const String deviceFamily = "ESP8266-DEMO";                             // used for OTA updates & about page
+const String softwareVersion = "1.10.21";                               // used for OTA updates & about page
+const String deviceFamily = "ESP8266-NOTSET";                           // used for OTA updates & about page
 const String description = "Description";                               // used for about page

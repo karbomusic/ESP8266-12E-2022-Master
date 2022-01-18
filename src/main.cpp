@@ -30,7 +30,6 @@
 
   Kary Wall 1/16/2022.
 ===================================================================+*/
-
 #include <localWiFi.h>
 #include <localUpdateServer.h>
 

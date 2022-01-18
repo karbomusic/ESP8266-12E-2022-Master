@@ -34,6 +34,8 @@ extern const String deviceFamily;
 extern const String description;
 extern const String ssid;
 extern const String hostName;
+extern long rssi;
+extern const String metaRedirect;
 
 void startServers(const char *host, String ipAddress)
 {
@@ -66,20 +68,21 @@ void startWebServer()
 
 void handleAbout()
 {
-    String aboutResponse = "<body style=\"background-color:#222222;color:#cccccc;font-family:arial\"><b>[About ESP8266]</b><br><br>"
+    String aboutResponse = "<body style=\"background-color:#222222;color:#cccccc;font-family:arial\"><b><h3>About " + hostName + "</h3></b>"
     "Device Family: " + deviceFamily + "<br>"
     "ESP Core Version: " + String(ESP.getCoreVersion()) + "<br>"
     "CPU Frequency: " + String(ESP.getCpuFreqMHz()) + "<br>"
     "Free Heap Mem: " + String(ESP.getFreeHeap()) + "<br>"
     "Flash Mem Size: " + String(ESP.getFlashChipRealSize() / 1024 / 1024) + " MB<br>"
-    "<b>Uptime:</b> " + String(millis()/1000/60) + " minutes<br>"
     "Hostname: " + hostName + "<br>"
     "IPAddress: " + localIP + "<br>"
     "MAC Address: " + String(WiFi.macAddress()) + "<br>"
-    "Software Version: " + softwareVersion + "<br>"
     "SSID: " + ssid + "<br>"
+    "Signal Strength: " + String(rssi) + "<br>"
+    "Software Version: " + softwareVersion + "<br>"
     "Description: " + description + "<br>"
-    "Update: http://" + hostName + ".ra.local/update<br><br>"
+    "<b>Uptime:</b> " + String(millis()/1000/60) + " minutes<br><br><br>"
+    "<button onclick=\"window.location.href='/update'\">Update</button>&nbsp;&nbsp;" 
     "<button onclick=\"window.location.href='/restart'\">Restart</button></body>";
     httpServer.send(200, "text/html", aboutResponse);
     aboutResponse.clear();
@@ -87,7 +90,9 @@ void handleAbout()
 
 void handleRestart()
 {
-    httpServer.send(200, "text/plain", "Restarting in 5 seconds...");
+    const String metaRedirect ="<html><head><meta http-equiv=\"refresh\"content=\"12;url=/about\"/></head><body>"
+    "Restarting in 5 seconds...<br>Returning to about page in 12 seconds.</body></html>";
+    httpServer.send(200, "text/html", metaRedirect);
     delay(5000);
     ESP.restart();
 }

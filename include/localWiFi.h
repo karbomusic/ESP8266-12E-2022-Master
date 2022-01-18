@@ -16,6 +16,7 @@
 
 int retryTrigger = 30;
 int timerSeconds = 0;
+long rssi;
 
 const char* getHostName()
 {
@@ -56,11 +57,15 @@ IPAddress startWiFi()
         }
         timerSeconds++;
     }
+    Serial.println("");
+    rssi = WiFi.RSSI();
     
     digitalWrite(LED_BUILTIN, HIGH);
     WiFi.setHostname(hostName.c_str());
     Serial.println("\n-------------------------------------");
     Serial.println("WiFi connected");
+    Serial.print("RSSI:");
+    Serial.println(rssi);
     Serial.print("IP address: ");
     Serial.println(WiFi.localIP());
     Serial.print("Hostname: ");
