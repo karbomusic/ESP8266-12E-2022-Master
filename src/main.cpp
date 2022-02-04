@@ -9,8 +9,6 @@
 
   Summary:   Project template that includes plubming and code for 
              a WiFi client + OTA updates via manual update.
-             Automatic updates are not yet implemented but
-             may be ported over from my legacy projects.
 
              EspUpdater: To upload through terminal you can use: 
              curl -F "image=@firmware.bin" host.ra.local/update
